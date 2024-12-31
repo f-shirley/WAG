@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import font
+from tkinter import messagebox
 from windows_automation_functions import WindowsAutomationFunctions
 
 class Gui:
@@ -23,51 +24,99 @@ class Gui:
         # create object holding application logic
         self.app_logic = WindowsAutomationFunctions()
 
-        # give each column and row in root equal weight
-        self.root.columnconfigure(0, weight=1)
-        self.root.columnconfigure(1, weight=1)
-        self.root.rowconfigure(0, weight=1)
+        # configure root to let the functionality containing frames occupy as much space as possible
+        # and the info widgets in the header to occupy the appropiate space
         self.root.rowconfigure(1, weight=1)
+        self.root.columnconfigure(0, weight=1)
+
+        # place menubar
+        self.root.config(menu = self.construct_menubar(self.root, self.design_parameters.version))
+
+        # create frame that holds all the functionality frames
+        self.frame_for_functionality_frames = tk.Frame(self.root)
+        self.frame_for_functionality_frames.grid(row=1, column=0, sticky="nsew")
+
+        # give each column and row in root equal weight
+        self.frame_for_functionality_frames.columnconfigure(0, weight=1)
+        self.frame_for_functionality_frames.columnconfigure(1, weight=1)
+        self.frame_for_functionality_frames.rowconfigure(0, weight=1)
+        self.frame_for_functionality_frames.rowconfigure(1, weight=1)
 
         # call function which constructs the gui
         self.place_all_frames()
 
+    # create application header menubar containing app info and help
+    def construct_menubar(self, frame, version):
+        activation_status_help_text = "Click 'Check' to see if Windows is activated.\
+                                        \nIf it is not, click 'Activate Windows' to run an Activation script,\
+                                        \nwhich checks the motherboard for an OEM key.\
+                                        \nIf activation fails, click 'Check' again.\
+                                        \nIf unsuccessful, run this program as an Administrator and try again.\
+                                        \nThis will only work if the computer had an OEM Windows key installed."
+        
+
+        def show_activation_help_message():
+            messagebox.showinfo("Activation Help", activation_status_help_text)
+        
+        def show_license_message():
+            messagebox.showinfo("LICENSE", self.design_parameters.license)
+
+        # create menubar
+        menubar = tk.Menu(frame)
+
+        # create menubar item
+        about = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="About", menu=about)
+        about.add_command(label=version, command=None)
+        about.add_command(label="License", command=show_license_message)
+
+        help = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Help", menu=help)
+        help.add_command(label="Activation Help", command=show_activation_help_message)
+
+        return menubar
+
     # call each frame's constructing function (which includes widgets) and place them
     def place_all_frames(self):
         # top left
-        frame_topleft, frame_topleft_header, frame_topleft_widgets = self.construct_frame_topleft()
-        frame_topleft.grid(column=0, row=0)
-        frame_topleft_header.grid(column=0, row=0)
+        frame_col0_row0, frame_col0_row0_header, frame_col0_row0_widgets = self.construct_frame_col0_row0()
+        frame_col0_row0.grid(column=0, row=0)
+        frame_col0_row0_header.grid(column=0, row=0)
 
         # top right
-        frame_topright, frame_topright_header, frame_topright_widgets = self.construct_frame_topright()
-        frame_topright.grid(column=1, row=0)
-        frame_topright_header.grid(column=0, row=0)
+        frame_col1_row0, frame_col1_row0_header, frame_col1_row0_widgets = self.construct_frame_col1_row0()
+        frame_col1_row0.grid(column=1, row=0)
+        frame_col1_row0_header.grid(column=0, row=0)
+
+        # middle left
+        frame_col0_row1, frame_col0_row1_header, frame_col0_row1_widgets = self.construct_frame_col0_row1()
+        frame_col0_row1.grid(column=0, row=1)
+        frame_col0_row1_header.grid(column=0, row=0)
+
+        # middle right
+        frame_col1_row1, frame_col1_row1_header, frame_col1_row1_widgets = self.construct_frame_col1_row1()
+        frame_col1_row1.grid(column=1, row=1)
+        frame_col1_row1_header.grid(column=0, row=0)
 
         # bottom left
-        frame_bottomleft, frame_bottomleft_header, frame_bottomleft_widgets = self.construct_frame_bottomleft()
-        frame_bottomleft.grid(column=0, row=1)
-        frame_bottomleft_header.grid(column=0, row=0)
+        frame_col0_row2, frame_col0_row2_header, frame_col0_row2_widgets = self.construct_frame_col0_row2()
+        frame_col0_row2.grid(column=0, row=2)
+        frame_col0_row2_header.grid(column=0, row=0)
 
         # bottom right
-        frame_bottomright, frame_bottomright_header, frame_bottomright_widgets = self.construct_frame_bottomright()
-        frame_bottomright.grid(column=1, row=1)
-        frame_bottomright_header.grid(column=0, row=0)
-
-        # last
-        frame_last, frame_last_header, frame_last_widgets = self.construct_frame_last()
-        frame_last.grid(column=0, row=2)
-        frame_last_header.grid(column=0, row=0)
+        frame_col1_row2, frame_col1_row2_header, frame_col1_row2_widgets = self.construct_frame_col1_row2()
+        frame_col1_row2.grid(column=1, row=2)
+        frame_col1_row2_header.grid(column=0, row=0)
 
         # place grid widget frames
-        common_styling_widget_frames = [frame_topleft_widgets, frame_topright_widgets, frame_bottomleft_widgets, frame_bottomright_widgets, frame_last_widgets]
+        common_styling_widget_frames = [frame_col0_row0_widgets, frame_col1_row0_widgets, frame_col0_row1_widgets, frame_col1_row1_widgets, frame_col0_row2_widgets, frame_col1_row2_widgets]
 
         for frame in common_styling_widget_frames:
             frame.grid(row=1, column=0, sticky="nsew")
             frame.columnconfigure(0, weight=1)
         
         # add common stylings to frames
-        common_styling_frames = [frame_topleft, frame_topright, frame_bottomleft, frame_bottomright, frame_last]
+        common_styling_frames = [frame_col0_row0, frame_col1_row0, frame_col0_row1, frame_col1_row1, frame_col0_row2, frame_col1_row2]
 
         for frame in common_styling_frames:
             frame.grid_configure(sticky='nsew', padx=10, pady=10)
@@ -83,8 +132,8 @@ class Gui:
     # begin frame and associated widgets constructing functions #
     # each will return it's frame to be used in place_all_frames() function
 
-    def construct_frame_topleft(self):
-        frame = tk.Frame(self.root)
+    def construct_frame_col0_row0(self):
+        frame = tk.Frame(self.frame_for_functionality_frames)
         frame_header = tk.Frame(frame)
 
         # construct widgets
@@ -92,8 +141,8 @@ class Gui:
 
         return frame, frame_header, frame_widgets
     
-    def construct_frame_topright(self):
-        frame = tk.Frame(self.root)
+    def construct_frame_col1_row0(self):
+        frame = tk.Frame(self.frame_for_functionality_frames)
         frame_header = tk.Frame(frame)
 
         # construct widgets
@@ -101,25 +150,34 @@ class Gui:
 
         return frame, frame_header, frame_widgets
     
-    def construct_frame_bottomleft(self):
-        frame = tk.Frame(self.root)
+    def construct_frame_col0_row1(self):
+        frame = tk.Frame(self.frame_for_functionality_frames)
         frame_header = tk.Frame(frame)
 
-        frame_widgets = self.installedprograms_widgets(frame, frame_header)
+        frame_widgets = self.installedapps_widgets(frame, frame_header, self.design_parameters.needs_installed_apps, self.design_parameters.title3)
 
         return frame, frame_header, frame_widgets
     
-    def construct_frame_bottomright(self):
-        frame = tk.Frame(self.root)
+    def construct_frame_col1_row1(self):
+        frame = tk.Frame(self.frame_for_functionality_frames)
+        frame_header = tk.Frame(frame)
+
+        frame_widgets = self.installedpackages_widgets(frame, frame_header, self.design_parameters.needs_installed_packages, self.design_parameters.title6)
+
+        return frame, frame_header, frame_widgets
+    
+    def construct_frame_col0_row2(self):
+        # fifth frame
+        frame = tk.Frame(self.frame_for_functionality_frames)
         frame_header = tk.Frame(frame)
 
         frame_widgets = self.runningprograms_widgets(frame, frame_header)
 
         return frame, frame_header, frame_widgets
     
-    def construct_frame_last(self):
-        # fifth frame
-        frame = tk.Frame(self.root)
+    def construct_frame_col1_row2(self):
+        # sixth frame
+        frame = tk.Frame(self.frame_for_functionality_frames)
         frame_header = tk.Frame(frame)
 
         frame_widgets = self.windowsactivation_status_widgets(frame, frame_header)
@@ -137,18 +195,55 @@ class Gui:
         lbl_title_windowsactivation_status.grid(column=0, row=0, sticky='n')
 
         # retrieve status of windows activation and display to user
+        # if licensed or error, prohibit use of Activate Windows button
+        # if not licensed, enable Activate Windows button
         def check_status_update_widget(self):
             status = self.app_logic.get_windowsactivation_status()
+            if status == "License Status: Licensed" or status == "Error retrieving status":
+                btn_activate_windows.config(state="disabled")
+            elif status == "License Status: Not Licensed":
+                btn_activate_windows.config(state="normal")
             lbl_status.config(text=status)
 
         # create label which displays the activation status after button press
         lbl_status = tk.Label(frame_widgets, font=self.main_font, text="Not checked")
         lbl_status.grid(column=0, row=1)
 
+        # attempt installing and/or changing product key
+        # returned result is used to display error message or continue the process
+        # attempt to activate windows and after a delay, retrieve and display the result
+        def activate_windows_update_widgets(self):
+            # list created to be passed by reference to save result from function called from another function
+            activation_result = []
+
+            status = self.app_logic.run_activate_windows_script()
+            if status != True:
+                lbl_status.config(text=status)
+                return
+            else:
+                btn_activate_windows.config(text="Activating...", state="disabled")
+                self.root.after(
+                    5000, lambda:
+                    [self.app_logic.run_activate_windows_check_status_script(activation_result), update_widgets()])
+                
+            # helper function called after the time delay needed to check activation status
+            def update_widgets():
+                if activation_result[0] == "True":
+                    # complete success tasks
+                    lbl_status.config(text="Successfully Activated Windows")
+                    btn_activate_windows.config(text="Activate Windows", state="disabled")
+                else:
+                    btn_activate_windows.config(text="Activate Windows")
+                    lbl_status.config(text=activation_result[0])
+
         #button
         btn_check_activation_status = tk.Button(frame_widgets, font=self.main_font,bg=self.design_parameters.buttons_color, text="Check",
                                                command=lambda:[check_status_update_widget(self), self.create_timestamp_widget(frame_widgets, 0, 3)])
         btn_check_activation_status.grid(column=0, row=2, pady=5)
+
+        btn_activate_windows = tk.Button(frame_widgets, font=self.main_font, bg=self.design_parameters.buttons_color, state="disabled", text="Activate Windows")
+        btn_activate_windows.configure(command=lambda:activate_windows_update_widgets(self))
+        btn_activate_windows.grid(column=0, row=4, pady=5)
 
         return frame_widgets
 
@@ -180,17 +275,17 @@ class Gui:
 
         return frame_widgets
 
-    def installedprograms_widgets(self, frame, frame_header):
+    def installedapps_widgets(self, frame, frame_header, needs_installed_apps_programs_list, title):
         frame_widgets = tk.Frame(frame)
 
         # title
-        lbl_title_diskcleaner = tk.Label(frame_header, font=self.header_font, text=self.design_parameters.title3)
-        lbl_title_diskcleaner.grid(column=0, row=0, sticky="n")
+        lbl_title = tk.Label(frame_header, font=self.header_font, text=title)
+        lbl_title.grid(column=0, row=0, sticky="n")
 
         # create widget list of programs
         widget_list_programs = []
-        for x in range(len(self.design_parameters.needs_installed_apps)):
-            lbl_app_name = tk.Label(frame_widgets, font=self.main_font, text=self.design_parameters.needs_installed_apps[x])
+        for x in range(len(needs_installed_apps_programs_list)):
+            lbl_app_name = tk.Label(frame_widgets, font=self.main_font, text=needs_installed_apps_programs_list[x])
             widget_list_programs.append(lbl_app_name)
             # place labels on grid
             row = x + 1 # to place on grid after header
@@ -211,8 +306,9 @@ class Gui:
         def update_app_installstatus_checkmarks():
             # retrieve status of desired apps, any value other than [0, 0] indicates app is installed
             # ["app name", "AppID"]
-            self.design_parameters.installed_apps_name_and_id_list = self.app_logic.find_installed_apps(self.design_parameters.needs_installed_apps,
-                                                                                                        self.design_parameters.duplicate_app_name)
+            self.design_parameters.installed_apps_name_and_id_list = self.app_logic.find_installed_apps(needs_installed_apps_programs_list,
+                                                                                                        self.design_parameters.duplicate_app_name,
+                                                                                                        self.design_parameters.duplicate_app_name_unique_id_string)
             
             # populate checkmarks' text with status indicator
             for x in range(len(self.design_parameters.installed_apps_name_and_id_list)):
@@ -220,6 +316,67 @@ class Gui:
                     widget_list_checkmarks[x].config(text="Yes", fg="green")
                 elif(self.design_parameters.installed_apps_name_and_id_list[x][0]) == 0:
                     widget_list_checkmarks[x].config(text="No", fg="red")
+
+        # button updates list of currently installed programs and updates checkmark status indicators
+        btn_find_installed_programs = tk.Button(frame_widgets, font=self.main_font,bg=self.design_parameters.buttons_color, text="Update", 
+                                                command=lambda:[update_app_installstatus_checkmarks(), 
+                                                                self.create_timestamp_widget(frame_widgets, 0, len(widget_list_checkmarks) + 2)])
+        btn_find_installed_programs.grid(columnspan=2, row=(len(widget_list_checkmarks) + 1), pady=5)
+
+        return frame_widgets
+        
+    def installedpackages_widgets(self, frame, frame_header, needs_installed_apps_programs_list, title):
+        frame_widgets = tk.Frame(frame)
+
+        # title
+        lbl_title = tk.Label(frame_header, font=self.header_font, text=title)
+        lbl_title.grid(column=0, row=0, sticky="n")
+
+        # create widget list of programs
+        widget_list_programs = []
+        for x in range(len(needs_installed_apps_programs_list)):
+            lbl_app_name = tk.Label(frame_widgets, font=self.main_font, text=needs_installed_apps_programs_list[x])
+            widget_list_programs.append(lbl_app_name)
+            # place labels on grid
+            row = x + 1 # to place on grid after header
+            widget_list_programs[x].grid(column=0, row=row, sticky="w")
+        # end widget list of programs
+
+        # create widget list of version numbers
+        widget_list_versions = []
+        for x in range(len(widget_list_programs)):
+            lbl_version = tk.Label(frame_widgets, font=self.main_font, text="ver.")
+            widget_list_versions.append(lbl_version)
+            # place labels on grid
+            row = x + 1 # to place on grid after header
+            widget_list_versions[x].grid(column=1, row=row, sticky="w")
+        # end widget list of programs
+
+        # create widget checkmarks for programs
+        widget_list_checkmarks = []
+        for x in range(len(widget_list_programs)):
+            lbl_checkmarks = tk.Label(frame_widgets, font=self.main_font, text="X")
+            widget_list_checkmarks.append(lbl_checkmarks)
+            # place checkmarks on grid
+            row = x + 1 # to place on grid after header
+            widget_list_checkmarks[x].grid(column=2, row=row, sticky="e", padx=5)
+        # end widget checkmarks for programs
+
+        # updates list of currently installed programs and updates checkmark status indicators and version numbers
+        def update_app_installstatus_checkmarks():
+            # retrieve status of desired apps, any value other than [0, 0] indicates app is installed
+            # ["name", "version"]
+            self.design_parameters.installed_package_names_and_versions = self.app_logic.find_installed_packages(needs_installed_apps_programs_list)
+            
+            # populate checkmarks' text with status indicator
+            # update version number widget
+            for x in range(len(self.design_parameters.installed_package_names_and_versions)):
+                if(self.design_parameters.installed_package_names_and_versions[x][0]) != 0:
+                    widget_list_checkmarks[x].config(text="Yes", fg="green")
+                    widget_list_versions[x].config(text=self.design_parameters.installed_package_names_and_versions[x][1])
+                elif(self.design_parameters.installed_package_names_and_versions[x][0]) == 0:
+                    widget_list_checkmarks[x].config(text="No", fg="red")
+                    widget_list_versions[x].config(text="N/A")
 
         # button updates list of currently installed programs and updates checkmark status indicators
         btn_find_installed_programs = tk.Button(frame_widgets, font=self.main_font,bg=self.design_parameters.buttons_color, text="Update", 
