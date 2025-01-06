@@ -97,4 +97,5 @@ To run the program without building to an exe:
 Run 'python wag.py' in the directory of this project.
 
 ## Screenshots:
-![Screenshot 1](screenshots/screenshot1-wag-v1-0-0.png)
+![Screenshot 1](screenshots/screenshot1-wag-v1-0-0.png)  
+![Screenshot 2](screenshots/screenshot2-wag-v1-1-0.png)
