@@ -123,8 +123,9 @@ class WindowsAutomationFunctions:
 
                     # just skips the duplicate app name that does not need to be checked for here
                     # use case: when the app is installed as an app and a package
-                    if duplicate_app_name_unique_id_string in str(result_appid[i]).strip("b'"):
-                        continue
+                    if duplicate_app_name_unique_id_string != "":
+                        if duplicate_app_name_unique_id_string in str(result_appid[i]).strip("b'"):
+                            continue
 
                     # debug info: lists found installed apps in console
                     # print("Installed App: " + str(result_startapps_names[i]).strip("b'") + " - AppID: " + str(result_appid[i]).strip("b'"))

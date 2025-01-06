@@ -4,18 +4,19 @@ from data import GuiDesignParameters
 import sys
 import os
 
-# version 1.0.0
-# last modified 12-31-2024
+# version 1.1.0
+# last modified 1-6-2025
 
 # colors
 peach = "#EFC5B9" # accent
 lightblue = "#B9E3EF" # buttons
+darkblue = "#1c384f" # dark mode background
 
 # adjustable parameters for the gui design
 # see data.py for all parameters
 gui_design_parameters = GuiDesignParameters()
 gui_design_parameters.app_title = "Windows Automation Gui"
-gui_design_parameters.version = "v1.0.0"
+gui_design_parameters.version = "v1.1.0"
 gui_design_parameters.start_dimensions = "750x650"
 gui_design_parameters.font_family_name = "Calibri"
 gui_design_parameters.font_size = 11
@@ -23,6 +24,8 @@ gui_design_parameters.header_font_size_adjuster = 3
 gui_design_parameters.font_color = "black"
 gui_design_parameters.buttons_color = lightblue
 gui_design_parameters.accent_color = peach
+gui_design_parameters.dark_theme_background_color = darkblue
+gui_design_parameters.light_theme_background_color = "white"
 gui_design_parameters.title1 = "Windows Update"
 gui_design_parameters.title2 = "Disk Cleaner"
 gui_design_parameters.title3 = "Check Installed Apps"

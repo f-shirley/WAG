@@ -48,12 +48,9 @@ class Gui:
     # create application header menubar containing app info and help
     def construct_menubar(self, frame, version):
         activation_status_help_text = "Click 'Check' to see if Windows is activated.\
-                                        \nIf it is not, click 'Activate Windows' to run an Activation script,\
-                                        \nwhich checks the motherboard for an OEM key.\
+                                        \nIf it is not, click 'Activate Windows' to run an Activation script.\
                                         \nIf activation fails, click 'Check' again.\
-                                        \nIf unsuccessful, run this program as an Administrator and try again.\
-                                        \nThis will only work if the computer had an OEM Windows key installed."
-        
+                                        \nIf unsuccessful, run this program as an Administrator and try again."
 
         def show_activation_help_message():
             messagebox.showinfo("Activation Help", activation_status_help_text)
@@ -73,6 +70,11 @@ class Gui:
         help = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Help", menu=help)
         help.add_command(label="Activation Help", command=show_activation_help_message)
+
+        options = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Options", menu=options)
+        options.add_command(label="Dark Theme", command=lambda:self.change_color_theme(self.root, 'dark'))
+        options.add_command(label="Light Theme", command=lambda:self.change_color_theme(self.root, 'light'))
 
         return menubar
 
@@ -436,5 +438,47 @@ class Gui:
     def create_timestamp_widget(self, widget_parent, column_value, row_value):
         current_time = self.app_logic.create_timestamp()
 
-        lbl_timestamp = tk.Label(widget_parent, font=self.main_font, text="Last clicked: " + current_time)
+        lbl_timestamp = tk.Label(widget_parent, font=self.main_font, text="Last clicked: " + current_time, bg=widget_parent.cget('bg'), fg=widget_parent.winfo_children()[0].cget('fg'))
         lbl_timestamp.grid(column=column_value, row=row_value, columnspan=2, sticky="we")
+
+    # update frame background color and label background and foreground/text colors
+    # based on dark/light theme colors assigned in wag.py
+    def change_color_theme(self, root, theme):
+        
+        if theme == 'dark':
+            for frame in root.winfo_children():
+                if isinstance(frame, tk.Frame):
+                    frame.config(bg=self.design_parameters.dark_theme_background_color)
+                    for frame in frame.winfo_children():
+                        if isinstance(frame, tk.Frame):
+                            frame.config(bg=self.design_parameters.dark_theme_background_color)
+                            for frame in frame.winfo_children():
+                                if isinstance(frame, tk.Frame):
+                                    frame.config(bg=self.design_parameters.dark_theme_background_color)
+                                    for widget in frame.winfo_children():
+                                        if isinstance(widget, tk.Label):
+                                            if widget.cget('text') == 'Yes' or widget.cget('text') == 'No':
+                                                # avoids changing the text color of Yes and No labels which will remain
+                                                # green or red respectively
+                                                widget.config(bg=self.design_parameters.dark_theme_background_color)
+                                                continue
+                                            widget.config(fg=self.design_parameters.accent_color, bg=self.design_parameters.dark_theme_background_color)
+        elif theme == 'light':
+            for frame in root.winfo_children():
+                if isinstance(frame, tk.Frame):
+                    frame.config(bg=self.design_parameters.light_theme_background_color)
+                    for frame in frame.winfo_children():
+                        if isinstance(frame, tk.Frame):
+                            frame.config(bg=self.design_parameters.light_theme_background_color)
+                            for frame in frame.winfo_children():
+                                if isinstance(frame, tk.Frame):
+                                    frame.config(bg=self.design_parameters.light_theme_background_color)
+                                    for widget in frame.winfo_children():
+                                        if isinstance(widget, tk.Label):
+                                            if widget.cget('text') == 'Yes' or widget.cget('text') == 'No':
+                                                # avoids changing the text color of Yes and No labels which will remain
+                                                # green or red respectively
+                                                widget.config(bg=self.design_parameters.light_theme_background_color)
+                                                continue
+                                            widget.config(fg=self.design_parameters.font_color, bg=self.design_parameters.light_theme_background_color)     
+                    
