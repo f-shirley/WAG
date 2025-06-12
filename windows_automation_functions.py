@@ -25,7 +25,7 @@ class WindowsAutomationFunctions:
             return self.windows_drive_dir
 
         try:
-            status = subprocess.Popen(["powershell", "cscript", self.windows_drive_dir + ":\\Windows\\System32\\slmgr.vbs", "/dli"], stdout=subprocess.PIPE)
+            status = subprocess.Popen(["powershell", "cscript", self.windows_drive_dir + ":\\Windows\\System32\\slmgr.vbs", "/dli"], creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.PIPE)
             result_status_lines = status.communicate()[0].splitlines()
 
             for item in result_status_lines:
@@ -49,25 +49,23 @@ class WindowsAutomationFunctions:
 
         try:
             # gets original key
-            get_key_process = subprocess.Popen(["wmic", "path", "softwarelicensingservice", "get", "OA3xOriginalProductkey", "/value"], stdout=subprocess.PIPE)
-            result_getkey_lines = get_key_process.communicate()[0]
+            # wmic command is deprecated and inconsistent among Windows versions
 
-            key = str(result_getkey_lines).split(sep="=")
-            key_formatted = key[1][:29]
+            get_key_process = subprocess.Popen(["powershell", "(Get-WmiObject -query 'select * from SoftwareLicensingService').OA3xOriginalProductkey"], creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.PIPE)
+            result_getkey_line = get_key_process.communicate()[0]
 
-            # installs key
-            install_key_process = subprocess.Popen(["powershell", "cscript", self.windows_drive_dir + ":\\Windows\\System32\\slmgr.vbs", "/ipk", key_formatted], stdout=subprocess.PIPE)
-            result_installkey_lines = install_key_process.communicate()[0].splitlines()
+            print("Get key result: " + str(result_getkey_line))
 
-            # check for key install success
-            # if no success and retrieved key is correct format:
-            # try changing the key a different way
-            if not (str(result_installkey_lines[len(result_installkey_lines) - 2]).endswith(" successfully.'")):
-                if len(key_formatted) == 29:
-                    change_key_process = subprocess.Popen(["powershell", self.windows_drive_dir + ":\\Windows\\System32\\changepk.exe", "/ProductKey", key_formatted], stdout=subprocess.PIPE)
-                else:
-                    return "Installing key failed\nThis feature requires running\nthis program as an Admin\nError retrieving product key"
-            
+            key_formatted = result_getkey_line.rstrip().decode()
+
+            if(len(key_formatted) == 29):
+                change_key_process = subprocess.Popen(["powershell", self.windows_drive_dir + ":\\Windows\\System32\\changepk.exe", "/ProductKey", key_formatted], creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.PIPE)
+                result_change_key_process = change_key_process.communicate()[0].splitlines()
+
+                for item in result_change_key_process:
+                    if "Access denied" in str(item) or "failed" in str(item):
+                        return "Installing key failed\nThis feature may require admin privileges\nTry activating manually using:\n" + key_formatted
+                
             # return True on complete success
             return True
             
@@ -77,14 +75,16 @@ class WindowsAutomationFunctions:
                 return "Error Activating Windows\nTry activating manually using this key:\n" + key_formatted
             else:
                 return "Error Activating Windows"
-            
+    
+    # unused in build v2-0-1
     def run_activate_windows_check_status_script(self, activation_result):
         # attempt activating windows and saving result
         # result is stored in a list (so it is pased by reference)
-        activate_process = subprocess.Popen(["powershell", "cscript", self.windows_drive_dir + ":\\Windows\\System32\\slmgr.vbs", "/ato"], stdout=subprocess.PIPE)
+        activate_process = subprocess.Popen(["powershell", "cscript", self.windows_drive_dir + ":\\Windows\\System32\\slmgr.vbs", "/ato"], creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.PIPE)
         result_activate_lines = activate_process.communicate()[0].splitlines()
+
         # check for activation success
-        if not (str(result_activate_lines[len(result_activate_lines) - 2]).endswith("Product activated successfully.'")):
+        if "Error" in result_activate_lines:
             activation_result.append("Error Activating Windows")
             return
         
@@ -93,21 +93,22 @@ class WindowsAutomationFunctions:
 
     # open windows update gui using powershell
     def open_windowsupdate(self):
-        process = subprocess.Popen(["powershell", "start", "ms-settings:windowsupdate"])
+        process = subprocess.Popen(["powershell", "start", "ms-settings:windowsupdate"], creationflags=subprocess.CREATE_NO_WINDOW)
 
     # open disk cleaner application using powershell
     def open_diskcleaner(self):
-        process = subprocess.Popen(["powershell", "cleanmgr.exe"]) # takes arguments from additional list items
+        process = subprocess.Popen(["powershell", "cleanmgr.exe"], creationflags=subprocess.CREATE_NO_WINDOW) # takes arguments from additional list items
         #result = process.communicate()[0]
         #print("Result: " + str(result))
 
     # returns a list of lists containing app names and ids; one element in format: ['name', 'id'] or [0, 0] if no matches
     # in the same order as the list of apps that need installed retrieved from data.py (needs_installed_apps var)
-    def find_installed_apps(self, needs_installed_apps, duplicate_app_name, duplicate_app_name_unique_id_string):
+    def find_installed_apps(self, needs_installed_apps, duplicate_app_name_unique_id_string):
 
         # executes powershell command to get currently installed start apps and packages
-        startapps_names = subprocess.Popen(["powershell", "get-StartApps | select -Expand Name"], stdout=subprocess.PIPE)
-        process_appid = subprocess.Popen(["powershell", "get-StartApps | select -Expand AppID"], stdout=subprocess.PIPE)
+        subprocess.CREATE_NO_WINDOW
+        startapps_names = subprocess.Popen(["powershell", "get-StartApps | select -Expand Name"], creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.PIPE)
+        process_appid = subprocess.Popen(["powershell", "get-StartApps | select -Expand AppID"], creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.PIPE)
         # retrieve list of app and package names, version, and appid from stdout of powershell command
         result_startapps_names = startapps_names.communicate()[0].splitlines()
         result_appid = process_appid.communicate()[0].splitlines()
@@ -140,7 +141,7 @@ class WindowsAutomationFunctions:
     def find_installed_packages(self, needs_installed_packages):
         # executes powershell command to get currently installed packages
         # retrieve list of package names, version from stdout of powershell command
-        package_names_and_version = subprocess.Popen(["powershell", "Get-Package | select -Property Name, Version | Format-List"], stdout=subprocess.PIPE)
+        package_names_and_version = subprocess.Popen(["powershell", "Get-Package | select -Property Name, Version | Format-List"], creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.PIPE)
         # splits each line into a list in format:
             # b'Name    : Package Name'
             # b'Version : 1.2.3'
@@ -169,7 +170,7 @@ class WindowsAutomationFunctions:
         # initialize list
         process_list = [0] * len(needs_running_apps)
 
-        process_names = subprocess.Popen(["powershell", "Get-Process | select -Expand ProcessName"], stdout=subprocess.PIPE)
+        process_names = subprocess.Popen(["powershell", "Get-Process | select -Expand ProcessName"], creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.PIPE)
         result_names_list = process_names.communicate()[0].splitlines()
 
         # loop through all processes

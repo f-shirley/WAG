@@ -17,12 +17,10 @@ Useful to make sure desired programs have started and are running (can be set be
 Lists desired processes with a green 'Yes' or red 'No' displayed by each process to reflect if it is
 currently running.  
 
-Check Windows Activation status:  
-Includes a button to display in the gui the license status.
-
-Activate Windows:  
-Provides a button to activate Windows using the original key.  
-The button is only clickable if the activation status has been checked, with the result being not licensed.  
+Check and/or Activate Windows:  
+Includes a button to activate Windows using a pre-existing OEM key from the computer's motherboard. Naturally, this only works 
+if there is an OEM key already installed to the motherboard. Hardware changes may make this method inapplicable.
+In the event of an error during the activation process, the gui will display the Key needed to manually activate Windows, if there is one.  
 
 Windows Updates:  
 Provides a button to launch the Windows Update gui  
@@ -38,7 +36,8 @@ A GuiDesignParameters object is created and adjustable parameters are assigned.
 The root window is created with Tkinter.  
 The Gui object from gui.py is created and receives the GuiDesignParameters object as an argument.  
 The application is launched.  
-The logic for the tasks are held in windows_automation_functions.py.  
+The logic for the automation tasks are held in windows_automation_functions.py,
+but the gui specific logic is still held in gui.py.  
 
 ## Adjustable parameters explained:  
 
@@ -68,6 +67,12 @@ from running the 'Get-Process' command in powershell. To add a process to check 
 command and make sure the desired process is listed under 'ProcessName', and then add it to the 'needs_running_apps'
 list in wag.py.  
 
+This application will scan automatically for installed programs, apps, and running processes every 45 minutes unless the autorun parameter in wag.py is set to False
+before building the app. Also, the scanning interval can be changed in wag.py in units of milliseconds.  
+
+This autorun functionality can also be turned off from the menu bar after launching the application, but the setting's selection will not persist through
+opening and closing the application.  
+
 ## Helpful knowledge for customizing the gui:  
 
 The '__init__' function of the Gui class in gui.py takes the data given as arguments and assigns it as class properties.
@@ -92,10 +97,9 @@ python -m venv venv
 pip install pyinstaller
 pyinstaller --onefile --noconsole --add-data="LICENSE:." --add-data="wag-logo.ico:." --icon=wag-logo.ico wag.py
 ```
-  
-To run the program without building to an exe:
-Run 'python wag.py' in the directory of this project.
+Use inno (jrsoftware.org/isdl.php) to create installer for the created exe  
+Use exemsi.com to convert the installer to msi file extension  
 
 ## Screenshots:
-![Screenshot 1](screenshots/screenshot1-wag-v1-0-0.png)  
-![Screenshot 2](screenshots/screenshot2-wag-v1-1-0.png)
+![Screenshot 1](screenshots/wag-v2-0-0-screenshot1.png)  
+![Screenshot 2](screenshots/wag-v2-0-0-screenshot2.png)
