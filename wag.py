@@ -4,8 +4,8 @@ from data import GuiDesignParameters
 import sys
 import os
 
-# version 2.0.0
-# last modified 6-12-2025
+# version 2.0.1
+# last modified 9-11-2025
 
 # colors
 peach = "#EFC5B9" # accent
@@ -16,7 +16,7 @@ darkblue = "#1c384f" # dark mode background
 # see data.py for all parameters
 gui_design_parameters = GuiDesignParameters()
 gui_design_parameters.app_title = "Windows Automation Gui"
-gui_design_parameters.version = "v2.0.0"
+gui_design_parameters.version = "v2.0.1"
 gui_design_parameters.font_family_name = "Calibri"
 gui_design_parameters.font_size = 11
 gui_design_parameters.header_font_size_adjuster = 3

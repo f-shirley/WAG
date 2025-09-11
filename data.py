@@ -13,7 +13,7 @@ class GuiDesignParameters:
         self.accent_color = None
         self.dark_theme_background_color = None
         self.light_theme_background_color = None
-        # title names for each of four workspaces/frames
+        # title names for each workspaces/frames
         self.title1 = None
         self.title2 = None
         self.title3 = None

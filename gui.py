@@ -109,19 +109,19 @@ class Gui:
 
     # END threading logic for button tasks
 
-    # if autorun is set to True/On, put each desired task to autorun on a thread that executes after a specified interval
-    # and call this function after that interval to repeat the process
-    # a reference is created for each task to cancel them when the autorun toggle is turned off
     def autorun_timer(self):
+        """ If autorun is set to True/On, put each desired task to autorun on a thread that executes after a specified interval 
+        and call this function after that interval to repeat the process. A reference is created for each task to cancel them when the autorun toggle is turned off. """
         if self.design_parameters.autorun == True:
             self.autorun_app_check_process_reference = self.root.after(self.design_parameters.autorun_interval_time, self.threading_check_installed_apps)
             self.autorun_package_check_process_reference = self.root.after(self.design_parameters.autorun_interval_time, self.threading_check_installed_packages)
             self.autorun_processes_check_process_reference = self.root.after(self.design_parameters.autorun_interval_time, self.threading_check_running_processes)
             self.root.after(self.design_parameters.autorun_interval_time, self.autorun_timer)
         
-    # if toggle is off, turn it on
-    # if toggle is on, turn it off and cancel existing autorun threads
     def toggle_autorun_timer(self):
+        """ If autorun status toggle is off, turn it on and start the autorun timer. 
+        If toggle is on, turn it off and cancel existing autorun threads. """
+        
         if self.design_parameters.autorun == False:
             self.design_parameters.autorun = True
             self.autorun_timer()
@@ -580,10 +580,10 @@ class Gui:
 
         lbl_timestamp.grid(column=column_value, row=row_value, columnspan=2, sticky="we")
 
-    # update frame background color and label background and foreground/text colors
-    # based on dark/light theme colors assigned in wag.py
     def change_color_theme(self, root, theme):
-        
+        """ Update frame background color and label background and foreground/text colors 
+        based on dark/light theme colors assigned in wag.py. """
+
         # assign theme variable to be used in other functions that create widgets
         self.design_parameters.theme = theme
 

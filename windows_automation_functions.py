@@ -7,24 +7,26 @@ class WindowsAutomationFunctions:
     def __init__(self):
         self.windows_drive_dir = self.get_windows_drive_letter()
 
-    # retrieve drive letter for installation location of windows
-    # to properly execute certain scripts
     def get_windows_drive_letter(self):
+        """ Returns drive letter for installation location of windows to properly execute certain scripts.
+         Returns error message string if exception is thrown. """
         try:
             windir = os.path.expandvars('%windir%')
             return str(windir[0])
         except:
             return "Error retrieving installation directory"
 
-    # get windows activation status
-    # cscript runs command in CLI environment
     def get_windowsactivation_status(self):
+        """ Returns Windows activation status of the host machine as a string: License Status: Licensed, 
+        License Status: Not Licensed, or Error retrieving status """
+
         # error handling for drive letter
         # if constructor retrieved error message instead of a letter, return the error message
         if len(self.windows_drive_dir) != 1:
             return self.windows_drive_dir
 
         try:
+            # cscript runs command in CLI environment
             status = subprocess.Popen(["powershell", "cscript", self.windows_drive_dir + ":\\Windows\\System32\\slmgr.vbs", "/dli"], creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.PIPE)
             result_status_lines = status.communicate()[0].splitlines()
 
@@ -38,10 +40,11 @@ class WindowsAutomationFunctions:
                     
         except:
             return "Error retrieving status"
-        
-    # attempt to get the original key, install that key, and then activate windows
-    # returns error messages or True if a complete success occurs
+
     def run_activate_windows_script(self):
+        """ Attempt to get the OEM Windows activation key stored from the computer's hardware, install that key, and then activate windows. 
+        Returns error message string or boolean True if successful. """
+
         # error handling for drive letter
         # if constructor retrieved error message instead of a letter, return the error message
         if len(self.windows_drive_dir) != 1:
@@ -75,35 +78,19 @@ class WindowsAutomationFunctions:
                 return "Error Activating Windows\nTry activating manually using this key:\n" + key_formatted
             else:
                 return "Error Activating Windows"
-    
-    # unused in build v2-0-1
-    def run_activate_windows_check_status_script(self, activation_result):
-        # attempt activating windows and saving result
-        # result is stored in a list (so it is pased by reference)
-        activate_process = subprocess.Popen(["powershell", "cscript", self.windows_drive_dir + ":\\Windows\\System32\\slmgr.vbs", "/ato"], creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.PIPE)
-        result_activate_lines = activate_process.communicate()[0].splitlines()
 
-        # check for activation success
-        if "Error" in result_activate_lines:
-            activation_result.append("Error Activating Windows")
-            return
-        
-        activation_result.append("True")
-        return
-
-    # open windows update gui using powershell
     def open_windowsupdate(self):
+        """ Open the windows update gui using powershell. """
         process = subprocess.Popen(["powershell", "start", "ms-settings:windowsupdate"], creationflags=subprocess.CREATE_NO_WINDOW)
 
-    # open disk cleaner application using powershell
     def open_diskcleaner(self):
+        """ Open the Disk Cleanup application gui using powershell. """
         process = subprocess.Popen(["powershell", "cleanmgr.exe"], creationflags=subprocess.CREATE_NO_WINDOW) # takes arguments from additional list items
-        #result = process.communicate()[0]
-        #print("Result: " + str(result))
 
-    # returns a list of lists containing app names and ids; one element in format: ['name', 'id'] or [0, 0] if no matches
-    # in the same order as the list of apps that need installed retrieved from data.py (needs_installed_apps var)
+    # returns in the same order as the list of apps that need installed retrieved from data.py (needs_installed_apps var)
+    # which is important to update the associated check marks in gui.py
     def find_installed_apps(self, needs_installed_apps, duplicate_app_name_unique_id_string):
+        """ Returns a list of lists containing app names and ids; one element in format: ['name', 'id'] or [0, 0] if no matches. """
 
         # executes powershell command to get currently installed start apps and packages
         subprocess.CREATE_NO_WINDOW
@@ -139,6 +126,8 @@ class WindowsAutomationFunctions:
         return installed_apps_name_and_id_list
 
     def find_installed_packages(self, needs_installed_packages):
+        """ Returns a list of lists containing package names and versions; one element in format: ['name', 'version'] or [0, 0] if no matches. """
+
         # executes powershell command to get currently installed packages
         # retrieve list of package names, version from stdout of powershell command
         package_names_and_version = subprocess.Popen(["powershell", "Get-Package | select -Property Name, Version | Format-List"], creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.PIPE)
@@ -160,13 +149,12 @@ class WindowsAutomationFunctions:
                     installed_package_name_and_version_list[x] = [str(result_package_names_and_version[i]).split(":", maxsplit=1)[1].strip(" '"), str(result_package_names_and_version[i + 1]).split(":", maxsplit=1)[1].strip(" '")]
                     break
 
-        # returns a list of lists containing package names and versions; one element in format: ['name', 'version'] or [0, 0] if no matches
         return installed_package_name_and_version_list
 
-    # saves all processes with argument[n] in list
-    # returns a list of the actual process names in the same order as the needs_running_apps list
-    # with 0 in the appropiate index if no match
     def check_running_processes(self, needs_running_apps):
+        """ Returns a list of all running processes of the host machine in the same order that matches the elements of the
+         provided list-type argument. A value of 0 is assigned to any index with no match. """
+
         # initialize list
         process_list = [0] * len(needs_running_apps)
 
@@ -182,8 +170,8 @@ class WindowsAutomationFunctions:
 
         return process_list
     
-    # returns a formatted timestamp string for current time
     def create_timestamp(self):
+        """ Return a formatted timestamp string for the current time on the host machine. """
         current_time = datetime.now().strftime("%m/%d/%y, %I:%M:%S %p")
         return current_time
 
